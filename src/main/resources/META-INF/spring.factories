@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.scott.elastic.auto.EsAutoConfiguration,com.scott.elastic.config.DocFieldsConfig,com.scott.elastic.config.ElasticSearchConfig
