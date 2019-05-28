@@ -1,74 +1,55 @@
 package com.scott.elastic.config;
 
-import com.scott.elastic.auto.EsProperties;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
+import lombok.Data;
+import org.elasticsearch.common.unit.ByteSizeUnit;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
-@Component
-@Configuration
-@EnableConfigurationProperties(EsProperties.class)
+/**
+ * es配置属性
+ *
+ * @author zhaogd
+ */
+@Data
+@ConfigurationProperties(prefix = "spring.data.es")
 public class ElasticSearchConfig {
 
-    @Autowired
-    private EsProperties esProperties;
+    /**
+     * ElasticSearch的host,多个节点逗号分隔，ip和port冒号隔开
+     */
+    private String hosts;
 
-    @Bean
-    public TransportClient esTransportClient() throws UnknownHostException {
+    /**
+     * 写入每个批次条数
+     */
+    private int bulkActions = 10000;
 
-        Settings settings = Settings.builder()
-                .put( "cluster.name", esProperties.getClusterName() )
-                .put("client.transport.sniff", true)
-                .build();
-        TransportAddress master = new TransportAddress( InetAddress.getByName( esProperties.getHost() ), esProperties.getTcpPort() );
-		TransportClient esClient = new PreBuiltTransportClient(settings).addTransportAddress( master );
-        return esClient;
-    }
+    /**
+     * 写入每个批次大小
+     */
+    private int bulkSize = 5;
+    private ByteSizeUnit bulkSizeUnit = ByteSizeUnit.MB;
 
-    @Bean
-    public RestHighLevelClient esRestHighLevelClient() {
+    /**
+     * 写入刷新阈值
+     */
+    private int flushIntervalTime = 10;
+    private TimeUnit flushIntervalTimeUnit = TimeUnit.SECONDS;
 
-        RestHighLevelClient restHighLevelClient = null;
-        if( null!=esProperties.getAuth() && "true".equals( esProperties.getAuth().get("enable")) ) {
+    /**
+     * 并行度
+     */
+    private int concurrentRequests = 1;
 
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials( AuthScope.ANY,new UsernamePasswordCredentials( esProperties.getAuth().get("username"), esProperties.getAuth().get("password") ));
+    /**
+     * 指数补偿策略初始时间阈值
+     */
+    private int exponentialBackoffPolicyInitialDelay = 50;
+    private TimeUnit exponentialBackoffPolicyInitialDelayUnit = TimeUnit.MILLISECONDS;
 
-            RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost( esProperties.getHost(), esProperties.getHttpPort() ))
-                    .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
-                        @Override
-                        public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                            return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-                        }
-                    });
-
-            restHighLevelClient = new RestHighLevelClient(restClientBuilder);
-            return restHighLevelClient ;
-        }
-
-        restHighLevelClient = new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost( esProperties.getHost(), esProperties.getHttpPort(), "http" )
-                )
-        );
-        return restHighLevelClient;
-    }
+    /**
+     * 重试次数
+     */
+    private int exponentialBackoffPolicyRetries = 8;
 }
