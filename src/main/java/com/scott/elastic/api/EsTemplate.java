@@ -4,6 +4,7 @@ import com.scott.elastic.dto.IndexDoc;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -35,6 +36,8 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * es操作模板类
@@ -62,9 +65,9 @@ public class EsTemplate implements EsOperations {
 
         try {
             return action.doInClient(client);
-        } catch (Throwable throwable) {
-            log.error("es执行出错", throwable);
-            throw new RuntimeException(throwable);
+        } catch (Exception e) {
+            log.error("es执行出错", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -291,175 +294,84 @@ public class EsTemplate implements EsOperations {
         });
     }
 
-//    /**
-//     * 滚动查询
-//     *
-//     * @param queryBuilder 查询条件
-//     * @param indices      索引名称
-//     * @return 结果
-//     */
-//    public SearchResponse searchByScroll(QueryBuilder queryBuilder, String[] sourceIncludes, SliceBuilder sliceBuilder, String... indices) {
-//        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(indices)
-//                .setQuery(queryBuilder)
-//                .setSize(50000)
-//                .addSort(SortBuilders.fieldSort("_doc"))
-//                .slice(sliceBuilder)
-//                .setScroll(TimeValue.timeValueSeconds(20))
-//                .setFetchSource(sourceIncludes, null);
-//
-//        logger.info("send request json:{}", searchRequestBuilder.toString());
-//        return searchRequestBuilder.get();
-//    }
-//
-//    /**
-//     * 根据滚动ID获取数据
-//     *
-//     * @param scrollId 滚动ID
-//     * @return 单次滚动结果
-//     */
-//    public SearchResponse searchByScrollId(String scrollId) {
-//        SearchScrollRequestBuilder searchScrollRequestBuilder = client.prepareSearchScroll(scrollId)
-//                .setScroll(TimeValue.timeValueSeconds(20));
-//        logger.info("searchByScrollId scrollID {}", scrollId);
-//        return searchScrollRequestBuilder.get();
-//    }
-//
-//
-//    /**
-//     * 加入索引请求到缓冲池
-//     *
-//     * @param indexName  索引名称
-//     * @param jsonString 索引实体
-//     */
-//    public void addIndexRequestToBulk(String indexName, String jsonString) {
-//        try {
-//            IndexDoc indexRequest = new IndexDoc(indexName, elasticSearchConfig.getType()).source(jsonString, XContentType.JSON);
-//            bulkProcessor.add(indexRequest);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//
-//    /**
-//     * 加入索引请求到缓冲池
-//     *
-//     * @param indexName 索引名称
-//     * @param id        ID
-//     * @param json      实体
-//     */
-//    public void addIndexRequestToBulk(String indexName, String id, Map<String, Object> json) {
-//        try {
-//            IndexDoc indexRequest = new IndexDoc(indexName, elasticSearchConfig.getType(), id).source(json);
-//            bulkProcessor.add(indexRequest);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * 加入索引请求到缓冲池
-//     *
-//     * @param indexName  索引名称
-//     * @param id         ID
-//     * @param jsonString 索引实体
-//     */
-//    public void addIndexRequestToBulk(String indexName, String id, String jsonString) {
-//        try {
-//            IndexDoc indexRequest = new IndexDoc(indexName, elasticSearchConfig.getType(), id).source(jsonString, XContentType.JSON);
-//            bulkProcessor.add(indexRequest);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * 加入删除请求到缓冲池
-//     *
-//     * @param indexName 索引名称
-//     * @param id        ID
-//     */
-//    public void addDeleteRequestToBulk(String indexName, String id) {
-//        try {
-//            DeleteRequest deleteRequest = new DeleteRequest(indexName, elasticSearchConfig.getType(), id);
-//            bulkProcessor.add(deleteRequest);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * 加入更新请求到缓冲池
-//     *
-//     * @param indexName   索引名
-//     * @param id          id
-//     * @param json        更新请求体
-//     * @param docAsUpsert 不存在时是否新增
-//     */
-//    public void addUpdateRequestToBulk(String indexName, String id, Map<String, Object> json, boolean docAsUpsert) {
-//        try {
-//            UpdateRequest updateRequest = new UpdateRequest(indexName, elasticSearchConfig.getType(), id)
-//                    .doc(json)
-//                    .docAsUpsert(docAsUpsert)
-//                    // 更新冲突时重试次数
-//                    .retryOnConflict(3);
-//            bulkProcessor.add(updateRequest);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * 加入更新请求到缓冲池
-//     *
-//     * @param indexName   索引名
-//     * @param id          id
-//     * @param jsonString  更新请求体
-//     * @param docAsUpsert 不存在时是否新增
-//     */
-//    public void addUpdateRequestToBulk(String indexName, String id, String jsonString, boolean docAsUpsert) {
-//        try {
-//            UpdateRequest updateRequest = new UpdateRequest(indexName, elasticSearchConfig.getType(), id)
-//                    .doc(jsonString, XContentType.JSON)
-//                    .docAsUpsert(docAsUpsert)
-//                    // 更新冲突时重试次数
-//                    .retryOnConflict(3);
-//            bulkProcessor.add(updateRequest);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//
-//    /**
-//     * 手动刷新索引
-//     *
-//     * @param indices 索引名称
-//     */
-//    public void refresh(String indices) {
-//        client.admin().indices().refresh(new RefreshRequest(indices)).actionGet();
-//    }
-//
-//
-//    /**
-//     * 关闭连接
-//     */
-//    public static void close() {
-//        try {
-//            bulkProcessor.awaitClose(5, TimeUnit.MINUTES);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//            logger.error(e.getMessage(), e);
-//        } finally {
-//            client.close();
-//        }
-//    }
-//
-//    /**
-//     * 手动刷新批处理器
-//     */
-//    public static void flush() {
-//        bulkProcessor.flush();
-//    }
+
+    @Override
+    public void addDocAsync(String index, String jsonString) {
+        final IndexRequest request = new IndexRequest(index)
+                .source(jsonString, XContentType.JSON);
+        bulkProcessor.add(request);
+    }
+
+    @Override
+    public void addDocAsync(String index, String id, Map<String, Object> json) {
+        final IndexRequest request = new IndexRequest(index)
+                .id(id)
+                .source(json);
+        bulkProcessor.add(request);
+    }
+
+    @Override
+    public void addDocAsync(String index, String id, String jsonString) {
+        final IndexRequest request = new IndexRequest(index)
+                .id(id)
+                .source(jsonString, XContentType.JSON);
+        bulkProcessor.add(request);
+    }
+
+    @Override
+    public void deleteDocAsync(String index, String id) {
+        final DeleteRequest request = new DeleteRequest(index).id(id);
+        bulkProcessor.add(request);
+    }
+
+    @Override
+    public void updateDocAsync(String index, String id, Map<String, Object> json, boolean docAsUpsert) {
+        final UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.index(index)
+                .id(id)
+                .doc(json)
+                .docAsUpsert(docAsUpsert)
+                .retryOnConflict(3);
+        bulkProcessor.add(updateRequest);
+    }
+
+    @Override
+    public void updateDocAsync(String index, String id, String jsonString, boolean docAsUpsert) {
+        final UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.index(index)
+                .id(id)
+                .doc(jsonString, XContentType.JSON)
+                .docAsUpsert(docAsUpsert)
+                .retryOnConflict(3);
+        bulkProcessor.add(updateRequest);
+    }
+
+
+    @Override
+    public void refresh(String... indices) {
+        this.execute(client -> client.indices().refresh(new RefreshRequest(indices), RequestOptions.DEFAULT));
+    }
+
+    @Override
+    public void close() {
+        try {
+            bulkProcessor.awaitClose(5, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void flush() {
+        bulkProcessor.flush();
+    }
 
 }

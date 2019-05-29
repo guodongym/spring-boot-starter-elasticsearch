@@ -10,6 +10,7 @@ import org.elasticsearch.search.sort.SortBuilder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ES操作模板接口
@@ -25,7 +26,6 @@ public interface EsOperations {
      * @return 存在则返回true
      */
     Boolean indicesExists(String... indices) throws IOException;
-
 
     /**
      * Executes the given action against the specified table handling resource management.
@@ -151,4 +151,76 @@ public interface EsOperations {
      * @return 更新结果信息
      */
     boolean updateByQuery(String index, QueryBuilder queryBuilder, Script script);
+
+    /**
+     * 异步新增，加入索引请求到缓冲池
+     *
+     * @param index      索引名称
+     * @param jsonString 索引实体
+     */
+    void addDocAsync(String index, String jsonString);
+
+
+    /**
+     * 异步新增，加入索引请求到缓冲池
+     *
+     * @param index 索引名称
+     * @param id    ID
+     * @param json  实体
+     */
+    void addDocAsync(String index, String id, Map<String, Object> json);
+
+    /**
+     * 异步新增，加入索引请求到缓冲池
+     *
+     * @param index      索引名称
+     * @param id         ID
+     * @param jsonString 索引实体
+     */
+    void addDocAsync(String index, String id, String jsonString);
+
+    /**
+     * 异步删除，加入删除请求到缓冲池
+     *
+     * @param index 索引名称
+     * @param id    ID
+     */
+    void deleteDocAsync(String index, String id);
+
+    /**
+     * 异步更新，加入更新请求到缓冲池
+     *
+     * @param index       索引名
+     * @param id          id
+     * @param json        更新请求体
+     * @param docAsUpsert 不存在时是否新增
+     */
+    void updateDocAsync(String index, String id, Map<String, Object> json, boolean docAsUpsert);
+
+    /**
+     * 异步更新，加入更新请求到缓冲池
+     *
+     * @param index       索引名
+     * @param id          id
+     * @param jsonString  更新请求体
+     * @param docAsUpsert 不存在时是否新增
+     */
+    void updateDocAsync(String index, String id, String jsonString, boolean docAsUpsert);
+
+    /**
+     * 手动刷新索引
+     *
+     * @param indices 索引名称
+     */
+    void refresh(String... indices);
+
+    /**
+     * 关闭连接
+     */
+    void close();
+
+    /**
+     * 手动刷新批处理器
+     */
+    void flush();
 }

@@ -6,7 +6,7 @@
 
     <groupId>com.scott.bigdata</groupId>
     <artifactId>spring-boot-starter-elasticsearch</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 
 
     <properties>

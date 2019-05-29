@@ -14,7 +14,7 @@ public interface ClientCallback<T> {
      *
      * @param client es客户端
      * @return a result object, or null if none
-     * @throws Throwable thrown by the Hbase API
+     * @throws Exception thrown by the es api
      */
-    T doInClient(RestHighLevelClient client) throws Throwable;
+    T doInClient(RestHighLevelClient client) throws Exception;
 }
