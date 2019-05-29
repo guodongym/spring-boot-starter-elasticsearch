@@ -54,9 +54,9 @@ public class EsTemplate implements EsOperations {
 
 
     @Override
-    public Boolean indicesExists(String... indices) throws IOException {
+    public Boolean indicesExists(String... indices) {
         GetIndexRequest request = new GetIndexRequest(indices);
-        return client.indices().exists(request, RequestOptions.DEFAULT);
+        return this.execute(client -> client.indices().exists(request, RequestOptions.DEFAULT));
     }
 
     @Override

@@ -39,7 +39,7 @@ public class ElasticSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(EsTemplate.class)
-    public EsTemplate hbaseTemplate() {
+    public EsTemplate esTemplate() {
         final String hostString = config.getHosts();
         Preconditions.checkNotNull(hostString,
                 "spring.data.es.hosts cannot be empty, please specify in configuration file");

@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.scott.elastic.boot.ElasticSearchAutoConfiguration
+com.scott.elastic.boot.ElasticSearchAutoConfiguration
