@@ -176,7 +176,7 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public boolean addDoc(String index, IndexDoc... docs) {
+    public boolean addDoc(String index, boolean create, IndexDoc... docs) {
         BulkRequest bulk = new BulkRequest(index);
         bulk.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 
@@ -185,6 +185,7 @@ public class EsTemplate implements EsOperations {
             if (StringUtils.isNotBlank(doc.getId())) {
                 request.id(doc.getId());
             }
+            request.create(create);
             request.source(doc.getJsonString(), XContentType.JSON);
 
             bulk.add(request);
@@ -212,7 +213,7 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public boolean updateDoc(String index, IndexDoc... docs) {
+    public boolean updateDoc(String index, boolean docAsUpsert, IndexDoc... docs) {
         BulkRequest bulk = new BulkRequest(index);
         bulk.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 
@@ -220,6 +221,7 @@ public class EsTemplate implements EsOperations {
             final UpdateRequest updateRequest = new UpdateRequest();
             updateRequest.id(doc.getId())
                     .doc(doc.getJsonString(), XContentType.JSON)
+                    .docAsUpsert(docAsUpsert)
                     .retryOnConflict(3);
 
             bulk.add(updateRequest);

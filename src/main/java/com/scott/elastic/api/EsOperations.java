@@ -108,11 +108,12 @@ public interface EsOperations {
     /**
      * 批量新增文档
      *
-     * @param index 索引名称
-     * @param docs  需要新增的json字符串列表
+     * @param index  索引名称
+     * @param create id存在时，是否跳过
+     * @param docs   需要新增的json字符串列表
      * @return 新增结果
      */
-    boolean addDoc(String index, IndexDoc... docs);
+    boolean addDoc(String index, boolean create, IndexDoc... docs);
 
     /**
      * 使用脚本更新文档
@@ -127,11 +128,12 @@ public interface EsOperations {
     /**
      * 批量修改文档
      *
-     * @param index 索引名称
-     * @param docs  需要修改的json字符串列表
+     * @param index       索引名称
+     * @param docAsUpsert id不存在时，是否新增
+     * @param docs        需要修改的json字符串列表
      * @return 修改结果
      */
-    boolean updateDoc(String index, IndexDoc... docs);
+    boolean updateDoc(String index, boolean docAsUpsert, IndexDoc... docs);
 
     /**
      * 批量删除文档
