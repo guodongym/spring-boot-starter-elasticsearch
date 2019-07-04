@@ -1,7 +1,6 @@
 package com.scott.elastic.api;
 
 import com.scott.elastic.dto.IndexDoc;
-import com.sun.istack.internal.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -127,7 +126,7 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public <T> List<T> searchDocs(QueryBuilder queryBuilder, @NotNull SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+    public <T> List<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
                                   SearchHitMapper<T> mapper, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
