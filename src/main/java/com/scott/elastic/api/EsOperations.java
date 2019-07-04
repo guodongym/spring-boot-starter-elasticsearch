@@ -79,7 +79,7 @@ public interface EsOperations {
      * @param indices        index名称
      * @return 检索结果
      */
-    <T> List<T> searchDocs(QueryBuilder queryBuilder, SortBuilder sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+    <T> List<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
                            SearchHitMapper<T> mapper, String... indices);
 
     /**
@@ -96,6 +96,26 @@ public interface EsOperations {
      */
     <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder sort, Integer pageNo, Integer pageSize,
                              AggregationBuilder aggregationBuilder, SearchResponseMapper<T> mapper, String... indices);
+
+    /**
+     * 滚动查询
+     *
+     * @param queryBuilder   查询条件
+     * @param sourceIncludes 需要返回的字段
+     * @param mapper         映射器
+     * @param indices        索引名称
+     * @return 结果
+     */
+    <T> T searchByScroll(QueryBuilder queryBuilder, String[] sourceIncludes, SearchResponseMapper<T> mapper, String... indices);
+
+    /**
+     * 根据滚动ID获取数据
+     *
+     * @param scrollId 滚动ID
+     * @param mapper   映射器
+     * @return 单次滚动结果
+     */
+    <T> T searchByScrollId(String scrollId, SearchResponseMapper<T> mapper);
 
     /**
      * 批量处理文档

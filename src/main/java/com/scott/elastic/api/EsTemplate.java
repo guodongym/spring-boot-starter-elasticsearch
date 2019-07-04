@@ -1,6 +1,7 @@
 package com.scott.elastic.api;
 
 import com.scott.elastic.dto.IndexDoc;
+import com.sun.istack.internal.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,11 +17,13 @@ import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -31,6 +34,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -123,16 +127,18 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public <T> List<T> searchDocs(QueryBuilder queryBuilder, SortBuilder sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+    public <T> List<T> searchDocs(QueryBuilder queryBuilder, @NotNull SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
                                   SearchHitMapper<T> mapper, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
                 .fetchSource(sourceIncludes, null)
-                .sort(sort)
                 .from((pageNo - 1) * pageSize)
                 .size(pageSize);
 
+        for (SortBuilder sortBuilder : sort) {
+            searchSourceBuilder.sort(sortBuilder);
+        }
         searchRequest.source(searchSourceBuilder);
 
         return this.search(mapper, searchRequest);
@@ -156,6 +162,39 @@ public class EsTemplate implements EsOperations {
         log.info("send request json:{}", searchRequest.toString());
         return this.execute(client -> {
             final SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            return mapper.mapRow(searchResponse);
+        });
+    }
+
+
+    @Override
+    public <T> T searchByScroll(QueryBuilder queryBuilder, String[] sourceIncludes, SearchResponseMapper<T> mapper, String... indices) {
+        SearchRequest searchRequest = new SearchRequest(indices);
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(queryBuilder)
+                .size(20000)
+                .sort(SortBuilders.fieldSort("_doc"))
+                .fetchSource(sourceIncludes, null);
+
+        searchRequest.source(searchSourceBuilder);
+        searchRequest.scroll(TimeValue.timeValueSeconds(60));
+
+        log.info("send request json:{}", searchSourceBuilder.toString());
+        return this.execute(client -> {
+            final SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            return mapper.mapRow(searchResponse);
+        });
+    }
+
+    @Override
+    public <T> T searchByScrollId(String scrollId, SearchResponseMapper<T> mapper) {
+        SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
+        scrollRequest.scroll(TimeValue.timeValueSeconds(60));
+
+        log.info("searchByScrollId scrollID {}", scrollId);
+        return this.execute(client -> {
+            final SearchResponse searchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
             return mapper.mapRow(searchResponse);
         });
     }
