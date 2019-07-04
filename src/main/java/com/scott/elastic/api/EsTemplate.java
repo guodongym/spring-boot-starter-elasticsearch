@@ -10,9 +10,7 @@ import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.get.MultiGetItemResponse;
-import org.elasticsearch.action.get.MultiGetRequest;
-import org.elasticsearch.action.get.MultiGetResponse;
+import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -32,6 +30,7 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.springframework.util.Assert;
@@ -76,10 +75,28 @@ public class EsTemplate implements EsOperations {
 
 
     @Override
-    public <T> List<T> get(String index, MultiGetItemMapper<T> mapper, String... ids) {
+    public <T> T get(String index, GetResponseMapper<T> mapper, String[] sourceIncludes, String id) {
+        final GetRequest request = new GetRequest(index, id);
+        FetchSourceContext fetchSourceContext =
+                new FetchSourceContext(true, sourceIncludes, null);
+        request.fetchSourceContext(fetchSourceContext);
+
+        log.info("GetRequest: [{}]", request.toString());
+        return this.execute(client -> {
+            final GetResponse response = client.get(request, RequestOptions.DEFAULT);
+            return mapper.mapRow(response);
+        });
+    }
+
+    @Override
+    public <T> List<T> mget(String index, MultiGetItemMapper<T> mapper, String[] sourceIncludes, String... ids) {
         final MultiGetRequest request = new MultiGetRequest();
+        FetchSourceContext fetchSourceContext = new FetchSourceContext(true, sourceIncludes, null);
+
         for (String id : ids) {
-            request.add(index, id);
+            request.add(
+                    new MultiGetRequest.Item(index, id).fetchSourceContext(fetchSourceContext)
+            );
         }
 
         log.info("MultiGetRequest Items: [{}]", request.getItems());

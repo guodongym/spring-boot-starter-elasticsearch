@@ -39,6 +39,16 @@ public interface EsOperations {
     <T> T execute(ClientCallback<T> action);
 
     /**
+     * GET
+     *
+     * @param index  index名称
+     * @param mapper 映射器
+     * @param id     id
+     * @return 结果
+     */
+    <T> T get(String index, GetResponseMapper<T> mapper, String[] sourceIncludes, String id);
+
+    /**
      * 批量GET
      *
      * @param index  index名称
@@ -46,7 +56,7 @@ public interface EsOperations {
      * @param ids    id列表
      * @return 结果
      */
-    <T> List<T> get(String index, MultiGetItemMapper<T> mapper, String... ids);
+    <T> List<T> mget(String index, MultiGetItemMapper<T> mapper, String[] sourceIncludes, String... ids);
 
     /**
      * 检索通用方法
