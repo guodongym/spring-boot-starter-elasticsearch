@@ -1,5 +1,6 @@
 package com.scott.elastic.api;
 
+import com.scott.elastic.dto.ElasticsearchPageResult;
 import com.scott.elastic.dto.IndexDoc;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -114,7 +115,7 @@ public class EsTemplate implements EsOperations {
 
 
     @Override
-    public <T> List<T> search(SearchHitMapper<T> mapper, SearchRequest searchRequest) {
+    public <T> ElasticsearchPageResult<T> search(SearchHitMapper<T> mapper, SearchRequest searchRequest) {
         log.info("send request json:{}", searchRequest.toString());
         return this.execute(client -> {
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -125,17 +126,22 @@ public class EsTemplate implements EsOperations {
                 rs.add(mapper.mapRow(hit, rowNum++));
             }
 
-            return rs;
+            final ElasticsearchPageResult<T> result = new ElasticsearchPageResult<>();
+            result.setTotalCount(searchResponse.getHits().getTotalHits().value);
+            result.setRelation(searchResponse.getHits().getTotalHits().relation);
+            result.setData(rs);
+            return result;
         });
     }
 
 
     @Override
-    public <T> List<T> searchAll(SearchHitMapper<T> mapper, int size, String... indices) {
+    public <T> ElasticsearchPageResult<T> searchAll(SearchHitMapper<T> mapper, int size, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        searchSourceBuilder.size(size);
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery())
+                .size(size)
+                .trackTotalHits(true);
 
         searchRequest.source(searchSourceBuilder);
 
@@ -143,14 +149,15 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public <T> List<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
-                                  SearchHitMapper<T> mapper, String... indices) {
+    public <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+                                                     SearchHitMapper<T> mapper, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
                 .fetchSource(sourceIncludes, null)
                 .from((pageNo - 1) * pageSize)
-                .size(pageSize);
+                .size(pageSize)
+                .trackTotalHits(true);
 
         for (SortBuilder sortBuilder : sort) {
             searchSourceBuilder.sort(sortBuilder);

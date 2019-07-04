@@ -1,5 +1,6 @@
 package com.scott.elastic.api;
 
+import com.scott.elastic.dto.ElasticsearchPageResult;
 import com.scott.elastic.dto.IndexDoc;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -65,7 +66,7 @@ public interface EsOperations {
      * @param searchRequest 检索请求
      * @return 检索结果
      */
-    <T> List<T> search(SearchHitMapper<T> mapper, SearchRequest searchRequest);
+    <T> ElasticsearchPageResult<T> search(SearchHitMapper<T> mapper, SearchRequest searchRequest);
 
     /**
      * 检索全部
@@ -75,7 +76,7 @@ public interface EsOperations {
      * @param indices index名称
      * @return 检索结果
      */
-    <T> List<T> searchAll(SearchHitMapper<T> mapper, int size, String... indices);
+    <T> ElasticsearchPageResult<T> searchAll(SearchHitMapper<T> mapper, int size, String... indices);
 
     /**
      * 条件检索
@@ -89,8 +90,8 @@ public interface EsOperations {
      * @param indices        index名称
      * @return 检索结果
      */
-    <T> List<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
-                           SearchHitMapper<T> mapper, String... indices);
+    <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+                                              SearchHitMapper<T> mapper, String... indices);
 
     /**
      * 条件检索并聚合
