@@ -90,7 +90,7 @@ public interface EsOperations {
      * @param indices        index名称
      * @return 检索结果
      */
-    <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+    <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
                                               SearchHitMapper<T> mapper, String... indices);
 
     /**
@@ -105,7 +105,7 @@ public interface EsOperations {
      * @param indices            index名称
      * @return 检索结果
      */
-    <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder sort, Integer pageNo, Integer pageSize,
+    <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder<?> sort, Integer pageNo, Integer pageSize,
                              AggregationBuilder aggregationBuilder, SearchResponseMapper<T> mapper, String... indices);
 
     /**

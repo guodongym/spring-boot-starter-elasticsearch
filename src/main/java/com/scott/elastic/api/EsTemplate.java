@@ -149,7 +149,7 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+    public <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
                                                      SearchHitMapper<T> mapper, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -159,7 +159,7 @@ public class EsTemplate implements EsOperations {
                 .size(pageSize)
                 .trackTotalHits(true);
 
-        for (SortBuilder sortBuilder : sort) {
+        for (SortBuilder<?> sortBuilder : sort) {
             searchSourceBuilder.sort(sortBuilder);
         }
         searchRequest.source(searchSourceBuilder);
@@ -169,7 +169,7 @@ public class EsTemplate implements EsOperations {
 
 
     @Override
-    public <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder sort, Integer pageNo, Integer pageSize,
+    public <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder<?> sort, Integer pageNo, Integer pageSize,
                                     AggregationBuilder aggregationBuilder, SearchResponseMapper<T> mapper, String... indices) {
 
         SearchRequest searchRequest = new SearchRequest(indices);
