@@ -169,17 +169,19 @@ public class EsTemplate implements EsOperations {
 
 
     @Override
-    public <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder<?> sort, Integer pageNo, Integer pageSize,
+    public <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder<?>[] sort, Integer pageNo, Integer pageSize,
                                     AggregationBuilder aggregationBuilder, SearchResponseMapper<T> mapper, String... indices) {
 
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
-                .sort(sort)
                 .from((pageNo - 1) * pageSize)
                 .size(pageSize)
                 .aggregation(aggregationBuilder);
 
+        for (SortBuilder<?> sortBuilder : sort) {
+            searchSourceBuilder.sort(sortBuilder);
+        }
         searchRequest.source(searchSourceBuilder);
 
         log.info("send request json:{}", searchRequest.toString());
@@ -191,15 +193,22 @@ public class EsTemplate implements EsOperations {
 
 
     @Override
-    public <T> T searchByScroll(QueryBuilder queryBuilder, String[] sourceIncludes, SearchResponseMapper<T> mapper, String... indices) {
+    public <T> T searchByScroll(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes,
+                                SearchResponseMapper<T> mapper, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
                 .size(20000)
-                .sort(SortBuilders.fieldSort("_doc"))
                 .fetchSource(sourceIncludes, null);
 
+        if (sort == null || sort.length == 0) {
+            searchSourceBuilder.sort(SortBuilders.fieldSort("_doc"));
+        } else {
+            for (SortBuilder<?> sortBuilder : sort) {
+                searchSourceBuilder.sort(sortBuilder);
+            }
+        }
         searchRequest.source(searchSourceBuilder);
         searchRequest.scroll(TimeValue.timeValueSeconds(60));
 

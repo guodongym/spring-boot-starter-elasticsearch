@@ -105,19 +105,20 @@ public interface EsOperations {
      * @param indices            index名称
      * @return 检索结果
      */
-    <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder<?> sort, Integer pageNo, Integer pageSize,
+    <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder<?>[] sort, Integer pageNo, Integer pageSize,
                              AggregationBuilder aggregationBuilder, SearchResponseMapper<T> mapper, String... indices);
 
     /**
      * 滚动查询
      *
      * @param queryBuilder   查询条件
+     * @param sort           排序
      * @param sourceIncludes 需要返回的字段
      * @param mapper         映射器
      * @param indices        索引名称
      * @return 结果
      */
-    <T> T searchByScroll(QueryBuilder queryBuilder, String[] sourceIncludes, SearchResponseMapper<T> mapper, String... indices);
+    <T> T searchByScroll(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes, SearchResponseMapper<T> mapper, String... indices);
 
     /**
      * 根据滚动ID获取数据
