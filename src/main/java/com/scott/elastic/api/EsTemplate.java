@@ -199,7 +199,7 @@ public class EsTemplate implements EsOperations {
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
-                .size(20000)
+                .size(2000)
                 .fetchSource(sourceIncludes, null);
 
         if (sort == null || sort.length == 0) {
