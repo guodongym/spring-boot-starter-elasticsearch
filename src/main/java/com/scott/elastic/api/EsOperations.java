@@ -84,13 +84,16 @@ public interface EsOperations {
      * @param queryBuilder   查询条件
      * @param sort           排序
      * @param sourceIncludes 需要返回的字段
+     * @param sourceExcludes 需要排除的字段
      * @param pageNo         当前页
      * @param pageSize       每页条数
      * @param mapper         映射器
      * @param indices        index名称
      * @return 检索结果
      */
-    <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+    <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder<?>[] sort,
+                                              String[] sourceIncludes, String[] sourceExcludes,
+                                              Integer pageNo, Integer pageSize,
                                               SearchHitMapper<T> mapper, String... indices);
 
     /**
@@ -114,11 +117,12 @@ public interface EsOperations {
      * @param queryBuilder   查询条件
      * @param sort           排序
      * @param sourceIncludes 需要返回的字段
+     * @param sourceExcludes 需要排除的字段
      * @param mapper         映射器
      * @param indices        索引名称
      * @return 结果
      */
-    <T> T searchByScroll(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes, SearchResponseMapper<T> mapper, String... indices);
+    <T> T searchByScroll(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes, String[] sourceExcludes, SearchResponseMapper<T> mapper, String... indices);
 
     /**
      * 根据滚动ID获取数据

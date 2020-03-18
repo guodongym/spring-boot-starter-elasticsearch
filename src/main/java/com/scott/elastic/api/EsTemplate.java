@@ -36,6 +36,7 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -149,12 +150,14 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes, Integer pageNo, Integer pageSize,
+    public <T> ElasticsearchPageResult<T> searchDocs(QueryBuilder queryBuilder, SortBuilder<?>[] sort,
+                                                     String[] sourceIncludes, @Nullable String[] sourceExcludes,
+                                                     Integer pageNo, Integer pageSize,
                                                      SearchHitMapper<T> mapper, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
-                .fetchSource(sourceIncludes, null)
+                .fetchSource(sourceIncludes, sourceExcludes)
                 .from((pageNo - 1) * pageSize)
                 .size(pageSize)
                 .trackTotalHits(true);
@@ -193,14 +196,15 @@ public class EsTemplate implements EsOperations {
 
 
     @Override
-    public <T> T searchByScroll(QueryBuilder queryBuilder, SortBuilder<?>[] sort, String[] sourceIncludes,
+    public <T> T searchByScroll(QueryBuilder queryBuilder, SortBuilder<?>[] sort,
+                                String[] sourceIncludes, @Nullable String[] sourceExcludes,
                                 SearchResponseMapper<T> mapper, String... indices) {
         SearchRequest searchRequest = new SearchRequest(indices);
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
                 .size(2000)
-                .fetchSource(sourceIncludes, null);
+                .fetchSource(sourceIncludes, sourceExcludes);
 
         if (sort == null || sort.length == 0) {
             searchSourceBuilder.sort(SortBuilders.fieldSort("_doc"));
