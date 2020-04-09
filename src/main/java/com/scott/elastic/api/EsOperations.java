@@ -54,10 +54,22 @@ public interface EsOperations {
      *
      * @param index  index名称
      * @param mapper 映射器
+     * @param sourceIncludes 需要返回的字段
      * @param ids    id列表
      * @return 结果
      */
     <T> List<T> mget(String index, MultiGetItemMapper<T> mapper, String[] sourceIncludes, String... ids);
+
+    /**
+     * 批量根据ID检索
+     *
+     * @param index  index名称
+     * @param mapper 映射器
+     * @param sourceIncludes 需要返回的字段
+     * @param ids    id列表
+     * @return 结果
+     */
+    <T> List<T> ids(String index, SearchHitMapper<T> mapper, String[] sourceIncludes, String... ids);
 
     /**
      * 检索通用方法

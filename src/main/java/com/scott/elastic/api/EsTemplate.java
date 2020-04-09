@@ -114,6 +114,24 @@ public class EsTemplate implements EsOperations {
         });
     }
 
+    @Override
+    public <T> List<T> ids(String index, SearchHitMapper<T> mapper, String[] sourceIncludes, String... ids) {
+        final SearchRequest request = new SearchRequest(index);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.idsQuery().addIds(ids))
+                .fetchSource(sourceIncludes, null);
+        request.source(searchSourceBuilder);
+
+        return this.execute(client -> {
+            List<T> rs = new ArrayList<>();
+            int rowNum = 0;
+            for (SearchHit hit : client.search(request, RequestOptions.DEFAULT).getHits()) {
+                rs.add(mapper.mapRow(hit, rowNum++));
+            }
+            return rs;
+        });
+    }
+
 
     @Override
     public <T> ElasticsearchPageResult<T> search(SearchHitMapper<T> mapper, SearchRequest searchRequest) {
