@@ -1,4 +1,4 @@
-package com.scott.elastic.api;
+package com.ksyun.elastic.api;
 
 import org.elasticsearch.action.get.GetResponse;
 

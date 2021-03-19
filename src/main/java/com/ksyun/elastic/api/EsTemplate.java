@@ -1,7 +1,7 @@
-package com.scott.elastic.api;
+package com.ksyun.elastic.api;
 
-import com.scott.elastic.dto.ElasticsearchPageResult;
-import com.scott.elastic.dto.IndexDoc;
+import com.ksyun.elastic.dto.ElasticsearchPageResult;
+import com.ksyun.elastic.dto.IndexDoc;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

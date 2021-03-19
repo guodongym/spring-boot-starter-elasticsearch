@@ -1,9 +1,9 @@
-package com.scott.elastic.boot;
+package com.ksyun.elastic.boot;
 
 import com.google.common.base.Preconditions;
-import com.scott.elastic.api.EsTemplate;
-import com.scott.elastic.config.ElasticSearchConfig;
-import com.scott.elastic.constants.Constants;
+import com.ksyun.elastic.api.EsTemplate;
+import com.ksyun.elastic.config.ElasticSearchConfig;
+import com.ksyun.elastic.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpHost;

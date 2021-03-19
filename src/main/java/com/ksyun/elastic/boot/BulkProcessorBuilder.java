@@ -13,9 +13,9 @@
  * or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package com.scott.elastic.boot;
+package com.ksyun.elastic.boot;
 
-import com.scott.elastic.config.ElasticSearchConfig;
+import com.ksyun.elastic.config.ElasticSearchConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BackoffPolicy;

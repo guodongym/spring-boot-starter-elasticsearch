@@ -1,4 +1,4 @@
-package com.scott.elastic.config;
+package com.ksyun.elastic.config;
 
 import lombok.Data;
 import org.elasticsearch.common.unit.ByteSizeUnit;

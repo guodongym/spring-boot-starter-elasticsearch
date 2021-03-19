@@ -1,4 +1,4 @@
-package com.scott.elastic.aop;
+package com.ksyun.elastic.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -22,7 +22,7 @@ public class TimeKeepingAspect {
     /**
      * 切点
      */
-    @Pointcut(value = "within(com.scott.elastic.api.EsTemplate)")
+    @Pointcut(value = "within(com.ksyun.elastic.api.EsTemplate)")
     public void methodPointcut() {
     }
 

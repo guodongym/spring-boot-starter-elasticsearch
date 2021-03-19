@@ -1,4 +1,4 @@
-package com.scott.elastic.dto;
+package com.ksyun.elastic.dto;
 
 import lombok.Data;
 import org.apache.lucene.search.TotalHits;

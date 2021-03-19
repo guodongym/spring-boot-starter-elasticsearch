@@ -1,7 +1,7 @@
-package com.scott.elastic.util;
+package com.ksyun.elastic.util;
 
 import com.google.common.collect.Lists;
-import com.scott.elastic.dto.FieldSortBuilder;
+import com.ksyun.elastic.dto.FieldSortBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;

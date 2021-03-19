@@ -1,4 +1,4 @@
-package com.scott.elastic.dto;
+package com.ksyun.elastic.dto;
 
 import lombok.Getter;
 import lombok.Setter;

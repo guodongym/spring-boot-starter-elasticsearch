@@ -1,7 +1,7 @@
-package com.scott.elastic.api;
+package com.ksyun.elastic.api;
 
-import com.scott.elastic.dto.ElasticsearchPageResult;
-import com.scott.elastic.dto.IndexDoc;
+import com.ksyun.elastic.dto.ElasticsearchPageResult;
+import com.ksyun.elastic.dto.IndexDoc;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.index.query.QueryBuilder;
