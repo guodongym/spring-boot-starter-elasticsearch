@@ -58,7 +58,7 @@ public interface EsOperations {
      * @param ids    id列表
      * @return 结果
      */
-    <T> List<T> mget(String index, MultiGetItemMapper<T> mapper, String[] sourceIncludes, String... ids);
+    <T> List<T> mGet(String index, MultiGetItemMapper<T> mapper, String[] sourceIncludes, String... ids);
 
     /**
      * 批量根据ID检索

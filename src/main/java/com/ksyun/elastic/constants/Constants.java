@@ -28,4 +28,6 @@ public class Constants {
 
     public static final Integer DEFAULT_ES_PORT = 9200;
 
+    public static final String DEFAULT_TYPE = "_doc";
+
 }

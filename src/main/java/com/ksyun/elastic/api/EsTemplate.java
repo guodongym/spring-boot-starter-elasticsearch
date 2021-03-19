@@ -1,5 +1,6 @@
 package com.ksyun.elastic.api;
 
+import com.ksyun.elastic.constants.Constants;
 import com.ksyun.elastic.dto.ElasticsearchPageResult;
 import com.ksyun.elastic.dto.IndexDoc;
 import lombok.AllArgsConstructor;
@@ -78,7 +79,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public <T> T get(String index, GetResponseMapper<T> mapper, String[] sourceIncludes, String id) {
-        final GetRequest request = new GetRequest(index, id);
+        final GetRequest request = new GetRequest(index, Constants.DEFAULT_TYPE, id);
         FetchSourceContext fetchSourceContext =
                 new FetchSourceContext(true, sourceIncludes, null);
         request.fetchSourceContext(fetchSourceContext);
@@ -91,13 +92,13 @@ public class EsTemplate implements EsOperations {
     }
 
     @Override
-    public <T> List<T> mget(String index, MultiGetItemMapper<T> mapper, String[] sourceIncludes, String... ids) {
+    public <T> List<T> mGet(String index, MultiGetItemMapper<T> mapper, String[] sourceIncludes, String... ids) {
         final MultiGetRequest request = new MultiGetRequest();
         FetchSourceContext fetchSourceContext = new FetchSourceContext(true, sourceIncludes, null);
 
         for (String id : ids) {
             request.add(
-                    new MultiGetRequest.Item(index, id).fetchSourceContext(fetchSourceContext)
+                    new MultiGetRequest.Item(index, Constants.DEFAULT_TYPE, id).fetchSourceContext(fetchSourceContext)
             );
         }
 
@@ -116,7 +117,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public <T> List<T> ids(String index, SearchHitMapper<T> mapper, String[] sourceIncludes, String... ids) {
-        final SearchRequest request = new SearchRequest(index);
+        final SearchRequest request = new SearchRequest(index).types(Constants.DEFAULT_TYPE);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.idsQuery().addIds(ids))
                 .fetchSource(sourceIncludes, null);
@@ -146,8 +147,7 @@ public class EsTemplate implements EsOperations {
             }
 
             final ElasticsearchPageResult<T> result = new ElasticsearchPageResult<>();
-            result.setTotalCount(searchResponse.getHits().getTotalHits().value);
-            result.setRelation(searchResponse.getHits().getTotalHits().relation);
+            result.setTotalCount(searchResponse.getHits().getTotalHits());
             result.setData(rs);
             return result;
         });
@@ -156,7 +156,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public <T> ElasticsearchPageResult<T> searchAll(SearchHitMapper<T> mapper, int size, String... indices) {
-        SearchRequest searchRequest = new SearchRequest(indices);
+        SearchRequest searchRequest = new SearchRequest(indices).types(Constants.DEFAULT_TYPE);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery())
                 .size(size)
@@ -172,7 +172,7 @@ public class EsTemplate implements EsOperations {
                                                      String[] sourceIncludes, @Nullable String[] sourceExcludes,
                                                      Integer pageNo, Integer pageSize,
                                                      SearchHitMapper<T> mapper, String... indices) {
-        SearchRequest searchRequest = new SearchRequest(indices);
+        SearchRequest searchRequest = new SearchRequest(indices).types(Constants.DEFAULT_TYPE);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
                 .fetchSource(sourceIncludes, sourceExcludes)
@@ -193,7 +193,7 @@ public class EsTemplate implements EsOperations {
     public <T> T searchIndexAndAggs(QueryBuilder queryBuilder, SortBuilder<?>[] sort, Integer pageNo, Integer pageSize,
                                     AggregationBuilder aggregationBuilder, SearchResponseMapper<T> mapper, String... indices) {
 
-        SearchRequest searchRequest = new SearchRequest(indices);
+        SearchRequest searchRequest = new SearchRequest(indices).types(Constants.DEFAULT_TYPE);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
                 .from((pageNo - 1) * pageSize)
@@ -217,7 +217,7 @@ public class EsTemplate implements EsOperations {
     public <T> T searchByScroll(QueryBuilder queryBuilder, SortBuilder<?>[] sort,
                                 String[] sourceIncludes, @Nullable String[] sourceExcludes,
                                 SearchResponseMapper<T> mapper, String... indices) {
-        SearchRequest searchRequest = new SearchRequest(indices);
+        SearchRequest searchRequest = new SearchRequest(indices).types(Constants.DEFAULT_TYPE);
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
@@ -270,7 +270,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public boolean addDoc(String index, boolean create, IndexDoc... docs) {
-        BulkRequest bulk = new BulkRequest(index);
+        BulkRequest bulk = new BulkRequest(index, Constants.DEFAULT_TYPE);
         bulk.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 
         for (IndexDoc doc : docs) {
@@ -290,7 +290,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public boolean updateDocByScript(String index, Script script, String... ids) {
-        BulkRequest bulk = new BulkRequest(index);
+        BulkRequest bulk = new BulkRequest(index, Constants.DEFAULT_TYPE);
         bulk.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 
         for (String id : ids) {
@@ -307,7 +307,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public boolean updateDoc(String index, boolean docAsUpsert, IndexDoc... docs) {
-        BulkRequest bulk = new BulkRequest(index);
+        BulkRequest bulk = new BulkRequest(index, Constants.DEFAULT_TYPE);
         bulk.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 
         for (IndexDoc doc : docs) {
@@ -324,7 +324,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public boolean deleteDoc(String index, String... ids) {
-        BulkRequest bulk = new BulkRequest(index);
+        BulkRequest bulk = new BulkRequest(index, Constants.DEFAULT_TYPE);
         bulk.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 
         for (String id : ids) {
@@ -338,7 +338,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public boolean updateByQuery(String index, QueryBuilder queryBuilder, Script script) {
-        UpdateByQueryRequest request = new UpdateByQueryRequest(index);
+        UpdateByQueryRequest request = new UpdateByQueryRequest(index).setDocTypes(Constants.DEFAULT_TYPE);
         request.setQuery(queryBuilder)
                 .setScript(script)
                 .setRefresh(true);
@@ -375,7 +375,7 @@ public class EsTemplate implements EsOperations {
      * @return 聚合结果
      */
     public <T> T aggregation(AggregationsMapper<T> mapper, QueryBuilder queryBuilder, AggregationBuilder aggregationBuilder, String... indices) {
-        SearchRequest searchRequest = new SearchRequest(indices);
+        SearchRequest searchRequest = new SearchRequest(indices).types(Constants.DEFAULT_TYPE);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder)
                 .size(0)
@@ -392,14 +392,14 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public void addDocAsync(String index, String jsonString) {
-        final IndexRequest request = new IndexRequest(index)
+        final IndexRequest request = new IndexRequest(index).type(Constants.DEFAULT_TYPE)
                 .source(jsonString, XContentType.JSON);
         bulkProcessor.add(request);
     }
 
     @Override
     public void addDocAsync(String index, String id, Map<String, Object> json) {
-        final IndexRequest request = new IndexRequest(index)
+        final IndexRequest request = new IndexRequest(index).type(Constants.DEFAULT_TYPE)
                 .id(id)
                 .source(json);
         bulkProcessor.add(request);
@@ -407,7 +407,7 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public void addDocAsync(String index, String id, String jsonString) {
-        final IndexRequest request = new IndexRequest(index)
+        final IndexRequest request = new IndexRequest(index).type(Constants.DEFAULT_TYPE)
                 .id(id)
                 .source(jsonString, XContentType.JSON);
         bulkProcessor.add(request);
@@ -415,14 +415,14 @@ public class EsTemplate implements EsOperations {
 
     @Override
     public void deleteDocAsync(String index, String id) {
-        final DeleteRequest request = new DeleteRequest(index).id(id);
+        final DeleteRequest request = new DeleteRequest(index).type(Constants.DEFAULT_TYPE).id(id);
         bulkProcessor.add(request);
     }
 
     @Override
     public void updateDocAsync(String index, String id, Map<String, Object> json, boolean docAsUpsert) {
         final UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(index)
+        updateRequest.index(index).type(Constants.DEFAULT_TYPE)
                 .id(id)
                 .doc(json)
                 .docAsUpsert(docAsUpsert)
@@ -433,7 +433,7 @@ public class EsTemplate implements EsOperations {
     @Override
     public void updateDocAsync(String index, String id, String jsonString, boolean docAsUpsert) {
         final UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(index)
+        updateRequest.index(index).type(Constants.DEFAULT_TYPE)
                 .id(id)
                 .doc(jsonString, XContentType.JSON)
                 .docAsUpsert(docAsUpsert)

@@ -1,7 +1,6 @@
 package com.ksyun.elastic.dto;
 
 import lombok.Data;
-import org.apache.lucene.search.TotalHits;
 
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class ElasticsearchPageResult<T> {
     /**
      * 总条数的模式，等于或者大于
      */
-    private TotalHits.Relation relation;
+//    private TotalHits.Relation relation;
 
     /**
      * 滚动id，导出时使用
